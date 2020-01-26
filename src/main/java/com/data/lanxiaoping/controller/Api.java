@@ -29,7 +29,7 @@ public class Api {
     @CrossOrigin
     @ResponseBody
     @GetMapping("/init")
-    public static List<List<LinkedHashMap<String,Object>>> getInitData(){
+    public List<List<LinkedHashMap<String,Object>>> getInitData(){
         return ScheduledTask.getInitData();
     }
 
