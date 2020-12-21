@@ -73,5 +73,17 @@ public class Api {
     }
 
 
+    /*
+     * @Author: tianyong
+     * @Date: 2020/12/21 17:03
+     * @Description: 获取更新时间
+     */
+    @CrossOrigin
+    @ResponseBody
+    @GetMapping("/time")
+    public static String time(){
+        return ScheduledTask.time();
+    }
+
 
 }

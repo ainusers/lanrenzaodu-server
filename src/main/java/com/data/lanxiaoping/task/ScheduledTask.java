@@ -10,9 +10,9 @@ import org.springframework.util.StringUtils;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -29,7 +29,7 @@ public class ScheduledTask {
     static Lock w = rwl.writeLock();
     private static Logger log =  LoggerFactory.getLogger(ScheduledTask.class);
     public static final String [] data = {"36kr","azhan","baidu","bzhan","douyin","juejin","maoyan","weibo","zhihu"};
-    private static volatile String date = "";
+    private static volatile long date = 0L;
     public static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
     public static final SimpleDateFormat sdfs = new SimpleDateFormat("MMddHHmm");
     private static ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -52,6 +52,37 @@ public class ScheduledTask {
     public static void setBack(String message){
         redisUtil.setBack(message);
     }
+
+
+    /*
+     * @Author: tianyong
+     * @Date: 2020/12/11 14:33
+     * @Description: 数据定时 新增,删除
+     */
+    public static void runTask(){
+        long begin = System.currentTimeMillis();
+        // 创建大小为10的线程池
+        ScheduledExecutorService pool = Executors.newScheduledThreadPool(20);
+        pool.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                try{
+                    w.lock();
+                    // 执行删除数据操作
+                    execFlushAll();
+                    // 执行插入数据脚本
+                    for(int i = 0,len = data.length;i<len;i++){
+                        execAddData(data[i]);
+                    }
+                    date = System.currentTimeMillis();
+                    w.unlock();
+                }catch (Exception e){
+                    log.error("数据定时更新失败 ！",e);
+                }
+            }
+        }, 0, 30, TimeUnit.MINUTES);
+    }
+
 
 
     /*
@@ -102,16 +133,14 @@ public class ScheduledTask {
      * @Description: 获取初始化数据
      */
     public static Map<String,List<Map<String,String>>> getInitData(){
-        // flushThisData
-        ScheduledTask.execFlushAll();
-        // pushData
-        for(int i =0,len = data.length;i<len;i++) {
-            ScheduledTask.execAddData(data[i]);
-        }
-        // getThisData
         Map<String,List<Map<String,String>>> result = new HashMap(9);
-        for(int i =0,len = data.length;i<len;i++) {
-            result.put(data[i],computeData(data[i],0,9));
+        try {
+            // getThisData
+            for(int i =0,len = data.length;i<len;i++) {
+                result.put(data[i],computeData(data[i],0,9));
+            }
+        } catch (Exception e) {
+            log.info("初始化数据: get失败 !");
         }
         return result;
     }
@@ -123,38 +152,29 @@ public class ScheduledTask {
      * @Description: 下拉刷新
      */
     public static List<Map<String,String>> refreshData(String type){
-        // flushThisData
-        // ScheduledTask.execFlushThis(type);
-        // pushData
-        // ScheduledTask.execAddData(type);
-        // getThisData
-        // return ScheduledTask.getPageData(type,1);
-        Thread t1 = new Thread(new Runnable() {
+        final CountDownLatch latch = new CountDownLatch(1);
+        new Thread(new Runnable() {
             @Override
             public void run() {
-                System.out.println(Thread.currentThread().getName()+ " " + 1);
-                ScheduledTask.execFlushThis(type);
+                try{
+                    ScheduledTask.execFlushThis(type);
+                    ScheduledTask.execAddData(type);
+                    Thread.sleep(400);
+                }catch(Exception e){
+                    log.info("下拉刷新: flush-push失败 !");
+                }finally {
+                    latch.countDown();
+                }
             }
-        });
-        Thread t2 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                System.out.println(Thread.currentThread().getName()+ " " + 2);
-                ScheduledTask.execAddData(type);
-            }
-        });
-        Thread t3 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                System.out.println(Thread.currentThread().getName()+ " " + 3);
-                List<Map<String, String>> pageData = ScheduledTask.getPageData(type, 1);
-                System.out.println(pageData);
-            }
-        });
-        executor.submit(t1);
-        executor.submit(t2);
-        executor.submit(t3);
-        return null;
+        }).start();
+        List<Map<String, String>> pageData = new ArrayList<>();
+        try {
+            latch.await();
+            pageData = ScheduledTask.getPageData(type, 1);
+        } catch (InterruptedException e) {
+            log.info("下拉刷新: get失败 !");
+        }
+        return pageData;
     }
 
 
@@ -189,5 +209,18 @@ public class ScheduledTask {
         }
         return row;
     }
+
+
+    /*
+     * @Author: tianyong
+     * @Date: 2020/12/21 17:04
+     * @Description: 获取最新更新时间
+     */
+    public static String time(){
+        String minute = (System.currentTimeMillis() - date) / (60 * 1000) +"";
+        if ("0".equals(minute)) return "刚刚更新";
+        return minute + "分前更新";
+    }
+
 
 }
