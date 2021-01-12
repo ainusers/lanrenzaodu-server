@@ -8,9 +8,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class LanxiaopingApplication {
 
     public static void main(String[] args) {
+        SpringApplication.run(LanxiaopingApplication.class, args);
         // 运行定时任务
         ScheduledTask.runTask();
-        SpringApplication.run(LanxiaopingApplication.class, args);
     }
 
 }

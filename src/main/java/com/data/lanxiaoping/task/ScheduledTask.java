@@ -28,7 +28,7 @@ public class ScheduledTask {
     private static final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
     static Lock w = rwl.writeLock();
     private static Logger log =  LoggerFactory.getLogger(ScheduledTask.class);
-    public static final String [] data = {"36kr","azhan","baidu","bzhan","douyin","juejin","maoyan","weibo","zhihu"};
+    public static final String [] data = {"baidu","weibo","douyin","zhihu","36kr","azhan","bzhan","juejin","maoyan"};
     private static volatile long date = 0L;
     public static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
     public static final SimpleDateFormat sdfs = new SimpleDateFormat("MMddHHmm");
@@ -80,7 +80,7 @@ public class ScheduledTask {
                     log.error("数据定时更新失败 ！",e);
                 }
             }
-        }, 0, 30, TimeUnit.MINUTES);
+        }, 0, 10, TimeUnit.MINUTES);
     }
 
 
@@ -132,12 +132,12 @@ public class ScheduledTask {
      * @Date: 2020/12/15 15:21
      * @Description: 获取初始化数据
      */
-    public static Map<String,List<Map<String,String>>> getInitData(){
-        Map<String,List<Map<String,String>>> result = new HashMap(9);
+    public static List<List<LinkedHashMap<String,Object>>> getInitData(){
+        List<List<LinkedHashMap<String,Object>>> result = new ArrayList<>(9);
         try {
             // getThisData
             for(int i =0,len = data.length;i<len;i++) {
-                result.put(data[i],computeData(data[i],0,9));
+                result.add(computeData(data[i],0,9));
             }
         } catch (Exception e) {
             log.info("初始化数据: get失败 !");
@@ -151,7 +151,7 @@ public class ScheduledTask {
      * @Date: 2020/12/15 15:21
      * @Description: 下拉刷新
      */
-    public static List<Map<String,String>> refreshData(String type){
+    public static List<LinkedHashMap<String,Object>> refreshData(String type){
         final CountDownLatch latch = new CountDownLatch(1);
         new Thread(new Runnable() {
             @Override
@@ -159,7 +159,7 @@ public class ScheduledTask {
                 try{
                     ScheduledTask.execFlushThis(type);
                     ScheduledTask.execAddData(type);
-                    Thread.sleep(400);
+                    Thread.sleep(1500);
                 }catch(Exception e){
                     log.info("下拉刷新: flush-push失败 !");
                 }finally {
@@ -167,7 +167,7 @@ public class ScheduledTask {
                 }
             }
         }).start();
-        List<Map<String, String>> pageData = new ArrayList<>();
+        List<LinkedHashMap<String, Object>> pageData = new ArrayList<>();
         try {
             latch.await();
             pageData = ScheduledTask.getPageData(type, 1);
@@ -183,7 +183,7 @@ public class ScheduledTask {
      * @Date: 2020/12/15 15:22
      * @Description: 获取分页数据
      */
-    public static List<Map<String,String>> getPageData(String type,Integer page){
+    public static List<LinkedHashMap<String,Object>> getPageData(String type,Integer page){
         return computeData(type,10*(page-1),10*(page-1)+9);
     }
 
@@ -193,13 +193,13 @@ public class ScheduledTask {
      * @Date: 2020/12/14 13:16
      * @Description: 获取分页数据
      */
-    public static List<Map<String,String>> computeData(String type, Integer start, Integer end){
-        List<Map<String,String>> row = new ArrayList(10);
+    public static List<LinkedHashMap<String,Object>> computeData(String type, Integer start, Integer end){
+        List<LinkedHashMap<String,Object>> row = new ArrayList(10);
         Set<ZSetOperations.TypedTuple<String>> sets = redisUtil.rangeWithScore(type + "_" + sdf.format(new Date()), start, end);
         for (ZSetOperations.TypedTuple<String> set : sets) {
-            Map<String,String> value = new HashMap(4);
+            LinkedHashMap<String,Object> value = new LinkedHashMap(4);
             Double score = set.getScore();
-            value.put("score", String.valueOf(score));
+            value.put("score", score.intValue());
             String[] datas = set.getValue().split("##");
             for(int j=0,len_data=datas.length;j<len_data;j++){
                 String[] data = datas[j].split("\\$\\$");

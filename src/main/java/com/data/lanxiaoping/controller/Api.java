@@ -1,4 +1,4 @@
-package com.data.lanxiaoping.Controller;
+package com.data.lanxiaoping.controller;
 
 import com.data.lanxiaoping.task.ScheduledTask;
 import org.springframework.stereotype.Controller;
@@ -7,7 +7,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,7 +30,7 @@ public class Api {
     @CrossOrigin
     @ResponseBody
     @GetMapping("/init")
-    public static Map<String, List<Map<String,String>>> getInitData(){
+    public static List<List<LinkedHashMap<String,Object>>> getInitData(){
         return ScheduledTask.getInitData();
     }
 
@@ -42,7 +43,7 @@ public class Api {
     @CrossOrigin
     @ResponseBody
     @GetMapping("/page")
-    public List<Map<String,String>> getPageData(String type,Integer page){
+    public List<LinkedHashMap<String,Object>> getPageData(String type,Integer page){
         return ScheduledTask.getPageData(type,page);
     }
 
@@ -55,8 +56,8 @@ public class Api {
     @CrossOrigin
     @ResponseBody
     @GetMapping("/refresh")
-    public List<Map<String,String>> refreshData(String type){
-        return ScheduledTask.refreshData(type);
+    public List<LinkedHashMap<String,Object>> refreshData(String type){
+        return ScheduledTask.refreshData(getModuleName(type));
     }
 
 
@@ -86,4 +87,22 @@ public class Api {
     }
 
 
+    /*
+     * @Author: tianyong
+     * @Date: 2021/1/11 19:15
+     * @Description: 获取模块名称
+     */
+    public String getModuleName(String index){
+        Map<String,String> data = new HashMap<>(9);
+        data.put("0","baidu");
+        data.put("1","weibo");
+        data.put("2","douyin");
+        data.put("3","zhihu");
+        data.put("4","36kr");
+        data.put("5","azhan");
+        data.put("6","bzhan");
+        data.put("7","juejin");
+        data.put("8","maoyan");
+        return data.get(index);
+    }
 }
