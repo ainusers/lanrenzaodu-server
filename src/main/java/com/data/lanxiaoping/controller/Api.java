@@ -44,7 +44,7 @@ public class Api {
     @ResponseBody
     @GetMapping("/page")
     public List<LinkedHashMap<String,Object>> getPageData(String type,Integer page){
-        return ScheduledTask.getPageData(type,page);
+        return ScheduledTask.getPageData(getModuleName(type),page);
     }
 
 
