@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -56,7 +55,7 @@ public class Api {
     @CrossOrigin
     @ResponseBody
     @GetMapping("/refresh")
-    public List<LinkedHashMap<String,Object>> refreshData(String type){
+    public List<LinkedHashMap<String,Object>> refreshData(String type) throws InterruptedException {
         return ScheduledTask.refreshData(getModuleName(type));
     }
 
@@ -82,7 +81,7 @@ public class Api {
     @CrossOrigin
     @ResponseBody
     @GetMapping("/time")
-    public static String time(){
+    public String time(){
         return ScheduledTask.time();
     }
 

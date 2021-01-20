@@ -5,12 +5,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
-import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.Lock;
@@ -60,7 +57,6 @@ public class ScheduledTask {
      * @Description: 数据定时 新增,删除
      */
     public static void runTask(){
-        long begin = System.currentTimeMillis();
         // 创建大小为10的线程池
         ScheduledExecutorService pool = Executors.newScheduledThreadPool(20);
         pool.scheduleAtFixedRate(new Runnable() {
@@ -80,7 +76,7 @@ public class ScheduledTask {
                     log.error("数据定时更新失败 ！",e);
                 }
             }
-        }, 0, 10, TimeUnit.MINUTES);
+        }, 0, 15, TimeUnit.MINUTES);
     }
 
 
@@ -90,12 +86,15 @@ public class ScheduledTask {
      * @Date: 2020/12/11 15:00
      * @Description: java调用python执行脚本 （批量执行脚本）
      */
-    public static void execAddData(String type) {
+    public static int execAddData(String type) {
+        int flag = 1;
         try {
-            Runtime.getRuntime().exec(ADD_URI + type+".py");
+            Process exec = Runtime.getRuntime().exec(ADD_URI + type + ".py");
+            flag = exec.waitFor();
         } catch (Exception e) {
             log.error("执行python脚本失败 ！",e);
         }
+        return flag;
     }
 
 
@@ -151,30 +150,22 @@ public class ScheduledTask {
      * @Date: 2020/12/15 15:21
      * @Description: 下拉刷新
      */
-    public static List<LinkedHashMap<String,Object>> refreshData(String type){
-        final CountDownLatch latch = new CountDownLatch(1);
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try{
-                    ScheduledTask.execFlushThis(type);
-                    ScheduledTask.execAddData(type);
-                    Thread.sleep(1500);
-                }catch(Exception e){
-                    log.info("下拉刷新: flush-push失败 !");
-                }finally {
-                    latch.countDown();
-                }
-            }
-        }).start();
-        List<LinkedHashMap<String, Object>> pageData = new ArrayList<>();
-        try {
-            latch.await();
-            pageData = ScheduledTask.getPageData(type, 1);
-        } catch (InterruptedException e) {
-            log.info("下拉刷新: get失败 !");
-        }
-        return pageData;
+    public static List<LinkedHashMap<String,Object>> refreshData(String type) throws InterruptedException {
+        final List<LinkedHashMap<String, Object>>[] pageData = new List[]{new ArrayList<>()};
+        Thread a = new Thread(()->{
+            // 执行删除数据操作
+            ScheduledTask.execFlushThis(type);
+        });
+        Thread b = new Thread(()->{
+            // 执行插入数据脚本
+            int i = ScheduledTask.execAddData(type);
+            if(0 == i) pageData[0] = ScheduledTask.getPageData(type, 1);
+        });
+        a.start();
+        a.join();
+        b.start();
+        b.join();
+        return pageData[0];
     }
 
 
