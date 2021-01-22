@@ -18,7 +18,7 @@ response = requests.get(url,headers=headers)
 date = datetime.datetime.now().strftime("%Y%m%d")
 
 # 连接redis
-pool = redis.ConnectionPool(host="192.168.2.155", port=6379, password="", max_connections=1024,db=0)
+pool = redis.ConnectionPool(host="192.168.2.144", port=6379, password="", max_connections=1024,db=0)
 con = redis.Redis(connection_pool=pool)
 
 # 判断对象是否为纯数字

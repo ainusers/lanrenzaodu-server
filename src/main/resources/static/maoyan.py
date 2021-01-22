@@ -8,7 +8,7 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 
 # 连接redis
-pool = redis.ConnectionPool(host="192.168.2.155", port=6379, password="", max_connections=1024,db=0)
+pool = redis.ConnectionPool(host="192.168.2.144", port=6379, password="", max_connections=1024,db=0)
 con = redis.Redis(connection_pool=pool)
 
 url = 'http://piaofang.maoyan.com/dashboard-ajax/movie?orderType=0&uuid=1764023371ac8-00ca742d431e3b-930346c-1fa400-1764023371ac8&riskLevel=71&optimusCode=10&_token=eJyNj08LgkAQxb%2FLnBfd1fVPCx6EIAw6JNYlPGxqq4Su6CJF9N0bSQ%2FdgoH35sfjMfOCISlBUAJTNYAAZlHLBwJmBMF8Gnh%2BELp%2BwDmB4peFbkjgOpy3IC5s41DiUZbPJEXwJYyGNCer5%2BgdjjOnEgxBbUwvbLtvpL7JTlmt1E%2FZWYVu7VKO9VXLobRbPTUVXvRPGLC6zbAa9b6oXNSs%2BwHfxL6xUR26av%2FITiqJ452K02MUwfsD271OBw%3D%3D'
@@ -23,7 +23,7 @@ i = 0
 for video in response['movieList']['list']:
     title = video['movieInfo']['movieName']
     online = video['movieInfo']['releaseInfo']
-    boxCount = video['showCount']
+    # boxCount = video['showCount']
     boxPer = video['splitBoxRate']
 
     if('' == online):
@@ -31,7 +31,7 @@ for video in response['movieList']['list']:
 
     # 写入redis
     i = i + 1
-    mid = "title$$" + title + '##' + "online$$" + online + '##' + "count$$" + str(boxCount) + '##' + "per$$" + boxPer
+    mid = "title$$" + title + '##' + "score$$" + boxPer + '##' + "hot$$" + online
     con.zadd('maoyan_{}'.format(date), {mid: i})
 
     # 读取redis

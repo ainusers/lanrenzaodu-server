@@ -4,7 +4,9 @@ import requests
 from lxml import etree
 import datetime
 import redis
-
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 # 组装请求
 url = 'https://www.zhihu.com/hot'
@@ -17,7 +19,7 @@ date = datetime.datetime.now().strftime("%Y%m%d")
 times = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 # 连接redis
-pool = redis.ConnectionPool(host="192.168.2.155", port=6379, password="", max_connections=1024,db=0)
+pool = redis.ConnectionPool(host="192.168.2.144", port=6379, password="", max_connections=1024,db=0)
 con = redis.Redis(connection_pool=pool)
 
 # 提取数据
@@ -34,7 +36,7 @@ for video in lists:
 
     # 写入redis
     i = i + 1
-    mid = "title$$" + title[0] + '##' + "link$$" + link[0] + '##' + "hot$$" + hot[0]
+    mid = "title$$" + title[0] + '##' + "link$$" + link[0] + '##' + "hot$$" + str(hot[0]).replace('热度','').replace(" ","")
     con.zadd('zhihu_{}'.format(date), {mid: i})
 
     # 读取redis
