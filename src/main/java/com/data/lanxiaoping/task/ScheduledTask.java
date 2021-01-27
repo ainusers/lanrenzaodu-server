@@ -29,7 +29,7 @@ public class ScheduledTask {
     private static volatile long date = 0L;
     public static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
     public static final SimpleDateFormat sdfs = new SimpleDateFormat("MMddHHmm");
-    private static ExecutorService executor = Executors.newSingleThreadExecutor();
+    public static final SimpleDateFormat generally = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
 
 
     @Resource
@@ -46,8 +46,8 @@ public class ScheduledTask {
      * @Date: 2020/12/15 18:32
      * @Description: 存储用户反馈
      */
-    public static void setBack(String message){
-        redisUtil.setBack(message);
+    public static Boolean setBack(String message){
+        return redisUtil.setBack(message);
     }
 
 

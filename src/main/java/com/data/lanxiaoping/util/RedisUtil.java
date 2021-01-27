@@ -28,8 +28,8 @@ public class RedisUtil {
      * @Date: 2020/12/15 18:13
      * @Description: 存储用户反馈
      */
-    public void setBack(String message){
-        stringRedisTemplate.opsForZSet().add("content",message,Integer.valueOf(ScheduledTask.sdfs.format(new Date())));
+    public Boolean setBack(String message){
+        return stringRedisTemplate.opsForZSet().add("content", message, Integer.valueOf(ScheduledTask.sdfs.format(new Date())));
     }
 
 
@@ -39,7 +39,7 @@ public class RedisUtil {
      * @Description: 删除当前所有的key
      */
     public void flushAll(){
-        Set<String> keys = stringRedisTemplate.keys("*");
+        Set<String> keys = stringRedisTemplate.keys("*_*");
         stringRedisTemplate.delete(keys);
     }
 

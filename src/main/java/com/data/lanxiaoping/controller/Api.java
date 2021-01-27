@@ -1,15 +1,14 @@
 package com.data.lanxiaoping.controller;
 
 import com.data.lanxiaoping.task.ScheduledTask;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
 
 /*
  * @Author: tianyong
@@ -19,6 +18,10 @@ import java.util.Map;
 @Controller
 @RequestMapping("/service")
 public class Api {
+
+
+    @Autowired
+    private ScheduledTask scheduledTask;
 
 
     /*
@@ -68,8 +71,8 @@ public class Api {
     @CrossOrigin
     @ResponseBody
     @GetMapping("/submit")
-    public void submit(String type, String message, String contact){
-        ScheduledTask.setBack(type + " :  <" + contact + ">  " + "  { " + message + " }");
+    public Boolean submit(String content, String contact){
+        return scheduledTask.setBack(ScheduledTask.generally.format(new Date()) + " :  <" + contact + ">  " + "  { " + content + " }");
     }
 
 
