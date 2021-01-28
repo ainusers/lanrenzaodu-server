@@ -28,8 +28,8 @@ public class RedisUtil {
      * @Date: 2020/12/15 18:13
      * @Description: 存储用户反馈
      */
-    public Boolean setBack(String message){
-        return stringRedisTemplate.opsForZSet().add("content", message, Integer.valueOf(ScheduledTask.sdfs.format(new Date())));
+    public Boolean setBack(String key,String message){
+        return stringRedisTemplate.opsForZSet().add(key, message, Integer.valueOf(ScheduledTask.sdfs.format(new Date())));
     }
 
 

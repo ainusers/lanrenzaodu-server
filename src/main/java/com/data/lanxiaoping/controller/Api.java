@@ -72,7 +72,20 @@ public class Api {
     @ResponseBody
     @GetMapping("/submit")
     public Boolean submit(String content, String contact){
-        return scheduledTask.setBack(ScheduledTask.generally.format(new Date()) + " :  <" + contact + ">  " + "  { " + content + " }");
+        return scheduledTask.setBack("userFeedback",ScheduledTask.generally.format(new Date()) + " :  <" + contact + ">  " + "  { " + content + " }");
+    }
+
+
+    /*
+     * @Author: tianyong
+     * @Date: 2020/12/15 16:46
+     * @Description: 统计用户信息
+     */
+    @CrossOrigin
+    @ResponseBody
+    @GetMapping("/statistics")
+    public Boolean statistics(String message){
+        return scheduledTask.setBack("userStatistics",message);
     }
 
 

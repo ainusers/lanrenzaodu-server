@@ -46,8 +46,8 @@ public class ScheduledTask {
      * @Date: 2020/12/15 18:32
      * @Description: 存储用户反馈
      */
-    public static Boolean setBack(String message){
-        return redisUtil.setBack(message);
+    public static Boolean setBack(String key,String message){
+        return redisUtil.setBack(key,message);
     }
 
 
