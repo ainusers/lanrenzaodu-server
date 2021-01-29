@@ -7,7 +7,7 @@ spring:
     static-locations: classpath:/static,classpath:/templates
   redis:
     database: 0
-    host: 192.168.2.144
+    host: 81.70.163.240
     port: 6379
     password: ''
     lettuce:
