@@ -22,7 +22,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class ScheduledTask {
 
     // private static final String ADD_URI = "python F:\\pycharm\\space\\scrapy_douban3\\scrapy\\douban3\\redis\\";
-    private static final String ADD_URI = "python /usr/local/tools/scripts/";
+    private static final String ADD_URI = "python3 /usr/local/tools/scripts/";
     private static final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
     static Lock w = rwl.writeLock();
     private static Logger log =  LoggerFactory.getLogger(ScheduledTask.class);
